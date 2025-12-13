@@ -1,0 +1,95 @@
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Analysis } from './entities/analysis.entity';
+import { CreateAnalysisDto } from './dto/create-analysis.dto';
+import { AiService } from '../ai/ai.service';
+import * as fs from 'fs/promises';
+
+@Injectable()
+export class AnalysisService {
+  constructor(
+    @InjectRepository(Analysis)
+    private analysisRepository: Repository<Analysis>,
+    private aiService: AiService,
+  ) {}
+
+  async create(
+    userId: string,
+    createAnalysisDto: CreateAnalysisDto,
+    file: Express.Multer.File,
+  ): Promise<Analysis> {
+    if (!file) {
+      throw new BadRequestException('파일을 업로드해주세요');
+    }
+
+    // Analysis 생성
+    const analysis = this.analysisRepository.create({
+      userId,
+      filePath: file.path,
+      userIntent: createAnalysisDto.userIntent,
+      status: 'processing',
+    });
+
+    await this.analysisRepository.save(analysis);
+
+    // 비동기로 AI 분석 실행
+    this.performAiAnalysis(analysis.id, file.path, createAnalysisDto.userIntent);
+
+    return analysis;
+  }
+
+  async findAll(userId: string): Promise<Analysis[]> {
+    return await this.analysisRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findOne(id: string, userId: string): Promise<Analysis> {
+    const analysis = await this.analysisRepository.findOne({
+      where: { id, userId },
+    });
+
+    if (!analysis) {
+      throw new NotFoundException('분석 보고서를 찾을 수 없습니다');
+    }
+
+    return analysis;
+  }
+
+  async remove(id: string, userId: string): Promise<void> {
+    const analysis = await this.findOne(id, userId);
+    
+    // 파일 삭제
+    try {
+      await fs.unlink(analysis.filePath);
+    } catch (error) {
+      console.error('파일 삭제 오류:', error);
+    }
+
+    await this.analysisRepository.remove(analysis);
+  }
+
+  private async performAiAnalysis(
+    analysisId: string,
+    filePath: string,
+    userIntent: string,
+  ): Promise<void> {
+    try {
+      // AI 분석 수행 (이미지 파일 경로 전달)
+      const aiResult = await this.aiService.analyzeUX(filePath, userIntent);
+
+      // 결과 저장
+      await this.analysisRepository.update(analysisId, {
+        aiAnalysisResult: aiResult,
+        status: 'completed',
+      });
+    } catch (error) {
+      console.error('AI 분석 오류:', error);
+      await this.analysisRepository.update(analysisId, {
+        status: 'failed',
+      });
+    }
+  }
+}

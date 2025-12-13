@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -10,6 +11,10 @@ export class User {
 
   @Column()
   name: string;
+
+  @Column()
+  @Exclude() // 응답에서 비밀번호 제외
+  password: string;
 
   @Column({ nullable: true })
   age: number;

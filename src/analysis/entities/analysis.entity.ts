@@ -19,6 +19,12 @@ export class Analysis {
   @Column('text')
   userIntent: string;
 
+  @Column({ nullable: true })
+  imageWidth: number;
+
+  @Column({ nullable: true })
+  imageHeight: number;
+
   @Column('text', { nullable: true })
   aiAnalysisResult: string;
 

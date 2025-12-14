@@ -23,18 +23,34 @@ export class AnalysisService {
       throw new BadRequestException('파일을 업로드해주세요');
     }
 
+    // 이미지 크기 감지
+    const sharp = require('sharp');
+    const metadata = await sharp(file.path).metadata();
+    const imageWidth = metadata.width;
+    const imageHeight = metadata.height;
+
+    console.log(`📐 이미지 크기 감지: ${imageWidth}x${imageHeight}`);
+
     // Analysis 생성
     const analysis = this.analysisRepository.create({
       userId,
       filePath: file.path,
       userIntent: createAnalysisDto.userIntent,
+      imageWidth,
+      imageHeight,
       status: 'processing',
     });
 
     await this.analysisRepository.save(analysis);
 
-    // 비동기로 AI 분석 실행
-    this.performAiAnalysis(analysis.id, file.path, createAnalysisDto.userIntent);
+    // 비동기로 AI 분석 실행 (이미지 크기 전달)
+    this.performAiAnalysis(
+      analysis.id,
+      file.path,
+      createAnalysisDto.userIntent,
+      imageWidth,
+      imageHeight,
+    );
 
     return analysis;
   }
@@ -75,10 +91,17 @@ export class AnalysisService {
     analysisId: string,
     filePath: string,
     userIntent: string,
+    imageWidth: number,
+    imageHeight: number,
   ): Promise<void> {
     try {
-      // AI 분석 수행 (이미지 파일 경로 전달)
-      const aiResult = await this.aiService.analyzeUX(filePath, userIntent);
+      // AI 분석 수행 (이미지 파일 경로 및 크기 전달)
+      const aiResult = await this.aiService.analyzeUX(
+        filePath,
+        userIntent,
+        imageWidth,
+        imageHeight,
+      );
 
       // JSON 하이라이트 정보 추출
       const highlights = this.extractHighlights(aiResult);

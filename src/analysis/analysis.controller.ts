@@ -58,6 +58,8 @@ export class AnalysisController {
         userId: '123e4567-e89b-12d3-a456-426614174000',
         filePath: 'uploads/1702468800-123456789.png',
         userIntent: '사용자가 3단계 이내로 회원가입을 완료할 수 있도록 하고 싶습니다',
+        imageWidth: 1920,
+        imageHeight: 1080,
         status: 'processing',
         createdAt: '2025-12-13T08:00:00.000Z',
       },
@@ -114,6 +116,8 @@ export class AnalysisController {
           userId: '123e4567-e89b-12d3-a456-426614174000',
           filePath: 'uploads/1702468800-123456789.png',
           userIntent: '사용자가 3단계 이내로 회원가입을 완료할 수 있도록',
+          imageWidth: 1920,
+          imageHeight: 1080,
           status: 'completed',
           aiAnalysisResult: '# UX 분석 보고서...',
           highlights: [
@@ -161,6 +165,8 @@ export class AnalysisController {
         userId: '123e4567-e89b-12d3-a456-426614174000',
         filePath: 'uploads/1702468800-123456789.png',
         userIntent: '사용자가 3단계 이내로 회원가입을 완료할 수 있도록',
+        imageWidth: 1920,
+        imageHeight: 1080,
         status: 'completed',
         aiAnalysisResult: '# UX 분석 보고서\n\n## 1. 사용자 의도 달성도...',
         highlights: [

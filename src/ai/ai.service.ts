@@ -17,9 +17,14 @@ export class AiService {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
-  async analyzeUX(filePath: string, userIntent: string): Promise<string> {
+  async analyzeUX(
+    filePath: string,
+    userIntent: string,
+    imageWidth: number,
+    imageHeight: number,
+  ): Promise<string> {
     try {
-      console.log('🔍 AI 분석 시작:', { filePath, userIntent });
+      console.log('🔍 AI 분석 시작:', { filePath, userIntent, imageWidth, imageHeight });
       
       // 프롬프트 템플릿 로드
       const promptTemplate = await this.loadPromptTemplate();
@@ -29,14 +34,17 @@ export class AiService {
       const base64Image = imageBuffer.toString('base64');
       const mimeType = this.getMimeType(filePath);
 
-      console.log('📷 이미지 정보:', { mimeType, size: imageBuffer.length });
+      console.log('📷 이미지 정보:', { mimeType, size: imageBuffer.length, width: imageWidth, height: imageHeight });
 
-      // 프롬프트 생성
-      const prompt = promptTemplate.replace('{USER_INTENT}', userIntent);
+      // 프롬프트 생성 (이미지 크기 정보 포함)
+      const prompt = promptTemplate
+        .replace('{USER_INTENT}', userIntent)
+        .replace('{IMAGE_WIDTH}', imageWidth.toString())
+        .replace('{IMAGE_HEIGHT}', imageHeight.toString());
 
       // Gemini 2.5 API 호출 (이미지 포함)
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash-exp',
         contents: [
           {
             role: 'user',

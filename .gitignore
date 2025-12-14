@@ -60,3 +60,6 @@ package-lock.json
 
 # TypeScript
 *.tsbuildinfo
+
+# 업로드 파일 저장소
+uploads

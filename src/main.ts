@@ -2,9 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 정적 파일 제공 (업로드된 이미지)  
+  // @ts-ignore
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // CORS 설정 (환경 변수 기반)
   const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:8080'];

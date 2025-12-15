@@ -38,6 +38,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('사용자를 찾을 수 없습니다');
     }
+
+    if (user.status !== 'approved') {
+      throw new UnauthorizedException('계정 승인 대기 중입니다. 관리자에게 문의하세요.');
+    }
     
     return user;
   }
